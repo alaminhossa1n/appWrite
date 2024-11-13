@@ -30,8 +30,8 @@ app.post("/add", async (req, res) => {
     const response = await databases.createDocument(
       appWriteDatabaseId,
       appWriteCollectionId,
-      "unique()", // Generates a unique ID for the document
-      data // The data to be saved
+      "unique()", 
+      data 
     );
     res.status(200).json({ message: "Data added successfully", response });
   } catch (error) {
