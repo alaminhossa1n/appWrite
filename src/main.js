@@ -15,6 +15,27 @@ export default async ({ req, res, log, error }) => {
     return res.text('Pong');
   }
 
+  //add data to the appwrite
+
+  if (req.path === '/add' && req.method === 'POST') {
+    const { data } = req.body;
+
+    try {
+      // Create a document in Appwrite database
+      const response = await databases.createDocument(
+        process.env.APPWRITE_DATABASE_ID,
+        process.env.APPWRITE_COLLECTION_ID,
+        'unique()',
+        data
+      );
+      return res
+        .status(200)
+        .json({ message: 'Data added successfully', response });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   // Fetch data from the Appwrite database
   if (req.path === '/data' && req.method === 'GET') {
     try {
