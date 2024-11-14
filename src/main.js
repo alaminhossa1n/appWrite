@@ -1,31 +1,41 @@
-import { Client, Users } from 'node-appwrite';
+import { Client, Users, Databases } from 'node-appwrite';
 
-// This Appwrite function will be executed every time your function is triggered
 export default async ({ req, res, log, error }) => {
-  // You can use the Appwrite SDK to interact with other services
-  // For this example, we're using the Users service
   const client = new Client()
     .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
     .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
     .setKey(req.headers['x-appwrite-key'] ?? '');
+
   const users = new Users(client);
+  const databases = new Databases(client); // Initialize the Databases service
 
   try {
-    const response = await users.list();
-    // Log messages and errors to the Appwrite Console
-    // These logs won't be seen by your end users
-    log(`Total users: ${response.total}`);
-  } catch(err) {
+    const userResponse = await users.list();
+    log(`Total users: ${userResponse.total}`);
+  } catch (err) {
     error("Could not list users: " + err.message);
   }
 
-  // The req object contains the request data
+  // Route handling based on request path
   if (req.path === "/ping") {
-    // Use res object to respond with text(), json(), or binary()
-    // Don't forget to return a response!
     return res.text("Pong");
   }
-  
+
+  // Fetch data from the Appwrite database
+  if (req.path === "/data" && req.method === "GET") {
+    try {
+      const response = await databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID,
+        process.env.APPWRITE_COLLECTION_ID
+      );
+      return res.json(response.documents);
+    } catch (err) {
+      error("Could not retrieve data: " + err.message);
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  // Default response
   return res.json({
     motto: "Build like a team of hundreds_",
     learn: "https://appwrite.io/docs",
