@@ -25,6 +25,19 @@ export default async ({ req, res, log, error }) => {
     // Don't forget to return a response!
     return res.text("Pong");
   }
+  
+  if (req.path === "/data" && req.method === "GET") {
+    try {
+      // Fetch documents from Appwrite database
+      const response = await databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID,
+        process.env.APPWRITE_COLLECTION_ID
+      );
+      return res.status(200).json(response.documents);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
 
   return res.json({
     motto: "Build like a team of hundreds_",
