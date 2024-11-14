@@ -1,4 +1,5 @@
-import { Client, Users, Databases } from 'node-appwrite';
+import { Client, Databases } from 'node-appwrite';
+require("dotenv").config();
 
 export default async ({ req, res, log, error }) => {
   const client = new Client()
@@ -6,16 +7,8 @@ export default async ({ req, res, log, error }) => {
     .setProject(process.env.APPWRITE_PROJECT_ID)
     .setKey(process.env.APPWRITE_API_KEY);
 
-  const users = new Users(client);
-  const databases = new Databases(client); // Initialize the Databases service
 
-  try {
-    const userResponse = await users.list();
-    log(`Total users: ${userResponse.total}`);
-  } catch (err) {
-    error("Could not list users: " + err.message);
-  }
-
+  const databases = new Databases(client);
   // Route handling based on request path
   if (req.path === "/ping") {
     return res.text("Pong");
