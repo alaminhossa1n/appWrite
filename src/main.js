@@ -37,6 +37,7 @@ export default async ({ req, res, log, error }) => {
 
   // Fetch data from the Appwrite database
   if (req.path === '/data' && req.method === 'GET') {
+    console.log('Alamin');
     try {
       const response = await databases.listDocuments(
         process.env.APPWRITE_DATABASE_ID,
