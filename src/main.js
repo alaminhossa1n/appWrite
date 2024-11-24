@@ -16,7 +16,6 @@ export default async ({ req, res, log, error }) => {
   }
 
   //add data to the appwrite
-
   if (req.path === '/add' && req.method === 'POST') {
     const { data } = req.body;
 
