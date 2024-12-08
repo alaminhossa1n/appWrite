@@ -1,35 +1,50 @@
-import { Client, Users } from 'node-appwrite';
+import { Client, Storage, ID } from 'node-appwrite';
 
-// This Appwrite function will be executed every time your function is triggered
-export default async ({ req, res, log, error }) => {
-  // You can use the Appwrite SDK to interact with other services
-  // For this example, we're using the Users service
+export default async ({ req, res, log }) => {
   const client = new Client()
     .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
     .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
-    .setKey(req.headers['x-appwrite-key'] ?? '');
-  const users = new Users(client);
+    .setKey(process.env.APPWRITE_API_KEY);
 
-  try {
-    const response = await users.list();
-    // Log messages and errors to the Appwrite Console
-    // These logs won't be seen by your end users
-    log(`Total users: ${response.total}`);
-  } catch(err) {
-    error("Could not list users: " + err.message);
-  }
+  const storage = new Storage(client);
 
-  // The req object contains the request data
-  if (req.path === "/ping") {
-    // Use res object to respond with text(), json(), or binary()
-    // Don't forget to return a response!
-    return res.text("Pong");
+  if (req.method === 'POST') {
+    try {
+      const bucketId = process.env.TEST_BUCKET_ID;
+
+      if (!bucketId) {
+        throw new Error('Missing required environment variable: BUCKET_ID');
+      }
+
+      // Assuming the file is in the request body as raw binary data
+      const fileBuffer = Buffer.from(req.body);
+
+      const response = await storage.createFile(
+        bucketId,
+        ID.unique(),
+        fileBuffer,
+        'file.txt' // Optional: Specify a filename
+      );
+
+      return res.json({
+        success: true,
+        code: 200,
+        message: 'File uploaded successfully',
+        file: response,
+      });
+    } catch (error) {
+      log('Error occurred:', error);
+      return res.json({
+        success: false,
+        message: error.message || 'Server Error',
+        code: error.code || 500,
+      });
+    }
   }
 
   return res.json({
-    motto: "Build like a team of hundreds_",
-    learn: "https://appwrite.io/docs",
-    connect: "https://appwrite.io/discord",
-    getInspired: "https://builtwith.appwrite.io",
+    success: false,
+    message: 'Method not allowed',
+    code: 405,
   });
 };
